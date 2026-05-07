@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema em Manutenção</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --orange: #E8511A;
+      --orange-light: #F06832;
+      --orange-dark: #C43E0E;
+      --white: #FFFFFF;
+      --white-soft: rgba(255,255,255,0.85);
+      --white-muted: rgba(255,255,255,0.5);
+      --white-subtle: rgba(255,255,255,0.15);
+      --white-ghost: rgba(255,255,255,0.07);
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background-color: var(--orange);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Background texture / orbs ── */
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-orb-1 {
+      width: 600px; height: 600px;
+      background: var(--orange-light);
+      top: -200px; right: -200px;
+      opacity: 0.5;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .bg-orb-2 {
+      width: 500px; height: 500px;
+      background: var(--orange-dark);
+      bottom: -150px; left: -150px;
+      opacity: 0.6;
+      animation: drift 15s ease-in-out infinite alternate-reverse;
+    }
+    .bg-orb-3 {
+      width: 300px; height: 300px;
+      background: rgba(255,200,100,0.3);
+      top: 50%; left: 30%;
+      opacity: 0.3;
+      animation: drift 9s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    /* ── Noise overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ── Card ── */
+    .card {
+      position: relative;
+      z-index: 2;
+      max-width: 560px;
+      width: 90%;
+      text-align: center;
+      animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Logo ── */
+    .logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 88px;
+      height: 88px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 28px;
+      margin-bottom: 40px;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.25);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3);
+      animation: rise 0.9s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* SVG logo recriado com base na imagem */
+    .logo-wrap svg {
+      width: 52px;
+      height: 52px;
+    }
+
+    /* ── Pulsing dot ── */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--white-subtle);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--white-soft);
+      margin-bottom: 28px;
+      animation: rise 0.9s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #FFD580;
+      flex-shrink: 0;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(255,213,128,0.6); }
+      50%       { opacity: 0.8; transform: scale(0.9); box-shadow: 0 0 0 6px rgba(255,213,128,0); }
+    }
+
+    /* ── Headline ── */
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      margin-bottom: 16px;
+      animation: rise 0.9s 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    h1 em {
+      font-style: normal;
+      display: block;
+      opacity: 0.7;
+      font-weight: 300;
+      font-size: 0.65em;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Body text ── */
+    p {
+      font-size: 1.05rem;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--white-soft);
+      max-width: 420px;
+      margin: 0 auto 40px;
+      animation: rise 0.9s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      width: 48px;
+      height: 2px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      margin: 0 auto 36px;
+      animation: rise 0.9s 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      background: var(--white-ghost);
+      border: 1px solid var(--white-subtle);
+      border-radius: 100px;
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      animation: rise 0.9s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(255,255,255,0.5), rgba(255,255,255,0.95));
+      border-radius: 100px;
+      animation: fill-bar 4s 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards, shimmer 2s 5s ease-in-out infinite;
+    }
+
+    @keyframes fill-bar {
+      to { width: 72%; }
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.7; }
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--white-muted);
+      text-transform: uppercase;
+      animation: rise 0.9s 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+      margin-bottom: 48px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      font-size: 0.75rem;
+      color: var(--white-muted);
+      animation: rise 0.9s 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+      letter-spacing: 0.02em;
+    }
+
+    footer a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.25);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    footer a:hover {
+      color: var(--white);
+      border-color: rgba(255,255,255,0.6);
+    }
+
+    /* ── Spinning gear / wrench decoration ── */
+    .gear {
+      position: fixed;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.06;
+    }
+    .gear-1 {
+      width: 320px; height: 320px;
+      top: -60px; left: -80px;
+      animation: spin 40s linear infinite;
+    }
+    .gear-2 {
+      width: 200px; height: 200px;
+      bottom: 40px; right: -40px;
+      animation: spin 25s linear infinite reverse;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background orbs -->
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <!-- Gear decorations -->
+  <svg class="gear gear-1" viewBox="0 0 100 100" fill="white" xmlns="http://www.w3.org/2000/svg">
+    <path d="M43.3 5.8l-3 10.3a34 34 0 0 0-8.8 3.6L22 14.9l-9.2 9.2 4.8 9.5a34 34 0 0 0-3.6 8.8L3.8 45.3v13l10.3 3a34 34 0 0 0 3.6 8.8l-4.8 9.5 9.2 9.2 9.5-4.8a34 34 0 0 0 8.8 3.6l3 10.4h13l3-10.3a34 34 0 0 0 8.8-3.6l9.5 4.8 9.2-9.2-4.8-9.5a34 34 0 0 0 3.6-8.8l10.3-3v-13l-10.3-3a34 34 0 0 0-3.6-8.8l4.8-9.5-9.2-9.2-9.5 4.8a34 34 0 0 0-8.8-3.6l-3-10.4h-13zm6.5 26.4a17.8 17.8 0 1 1 0 35.6 17.8 17.8 0 0 1 0-35.6z"/>
+  </svg>
+  <svg class="gear gear-2" viewBox="0 0 100 100" fill="white" xmlns="http://www.w3.org/2000/svg">
+    <path d="M43.3 5.8l-3 10.3a34 34 0 0 0-8.8 3.6L22 14.9l-9.2 9.2 4.8 9.5a34 34 0 0 0-3.6 8.8L3.8 45.3v13l10.3 3a34 34 0 0 0 3.6 8.8l-4.8 9.5 9.2 9.2 9.5-4.8a34 34 0 0 0 8.8 3.6l3 10.4h13l3-10.3a34 34 0 0 0 8.8-3.6l9.5 4.8 9.2-9.2-4.8-9.5a34 34 0 0 0 3.6-8.8l10.3-3v-13l-10.3-3a34 34 0 0 0-3.6-8.8l4.8-9.5-9.2-9.2-9.5 4.8a34 34 0 0 0-8.8-3.6l-3-10.4h-13zm6.5 26.4a17.8 17.8 0 1 1 0 35.6 17.8 17.8 0 0 1 0-35.6z"/>
+  </svg>
+
+  <!-- Main content -->
+  <div class="card">
+
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <!-- Recriação do símbolo da logo: arco + ponto tipo "stopwatch/record" -->
+      <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Arco superior (abertura para baixo) -->
+        <path d="M12 20 A16 16 0 1 1 40 20" stroke="white" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <!-- Haste vertical curta no topo centro -->
+        <line x1="26" y1="10" x2="26" y2="4" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+        <!-- Ponto / bolinha preenchida no centro -->
+        <circle cx="26" cy="32" r="5" fill="white"/>
+      </svg>
+    </div>
+
+    <!-- Status pill -->
+    <div class="status-pill">
+      <span class="dot"></span>
+      Incidente em andamento
+    </div>
+
+    <!-- Headline -->
+    <h1>
+      Estamos resolvendo<br/>
+      <em>em breve voltamos</em>
+    </h1>
+
+    <div class="divider"></div>
+
+    <!-- Description -->
+    <p>
+      Nosso sistema está passando por uma instabilidade momentânea.
+      Nossa equipe já está trabalhando ativamente para restaurar
+      tudo o mais rápido possível. Pedimos desculpas pelo inconveniente.
+    </p>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-bar"></div>
+    </div>
+    <div class="progress-label">
+      <span>Restauração em progresso</span>
+      <span id="pct">0%</span>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      Se precisar de suporte urgente, entre em contato conosco.<br/>
+      Agradecemos sua paciência.
+    </footer>
+
+  </div>
+
+  <script>
+    // Animate percentage counter to match bar fill
+    const pct = document.getElementById('pct');
+    let current = 0;
+    const target = 72;
+    const delay = 1200; // match CSS animation delay
+    const duration = 4000;
+    const start = performance.now() + delay;
+
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function tick(now) {
+      if (now < start) { requestAnimationFrame(tick); return; }
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      current = Math.round(easeOut(progress) * target);
+      pct.textContent = current + '%';
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  </script>
+
+</body>
+</html>
+
